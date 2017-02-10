@@ -56,7 +56,7 @@ public class NoneShardSpec implements ShardSpec
   }
 
   @Override
-  @Jsonignore
+  @JsonIgnore
   public int getPartitionNum()
   {
     return 0;
