@@ -30,6 +30,7 @@ import io.druid.segment.SegmentUtils;
 import io.druid.timeline.DataSegment;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -92,7 +93,21 @@ public class LocalDataSegmentPusher implements DataSegmentPusher
     }
     File outFile = new File(outDir, "index.zip");
     log.info("Compressing files from[%s] to [%s]", dataSegmentFile, outFile);
-    long size = CompressionUtils.zip(dataSegmentFile, outFile);
+
+    // Carousell - custom start
+    long size;
+    try {
+      size = CompressionUtils.zip(dataSegmentFile, outFile);
+    }
+    catch (FileNotFoundException fne) {
+      log.warn("Ignoring this exception " + fne.getMessage(), fne);
+      return segment;
+    }
+    catch (IOException ioe) {
+      log.error("Error creating zip " + ioe.getMessage(), ioe);
+      throw ioe;
+    }
+    // Carousell - custom end
 
     return createDescriptorFile(
         segment.withLoadSpec(makeLoadSpec(outFile))
